@@ -1,0 +1,28 @@
+.global main2,gof
+.section data
+    .equ pst, main2-0x560
+    .equ gof, pst+0x03
+
+.section text
+main2:
+    mov $0, (%r1)
+    mov $0, %r1l
+new: addw $0x1234, %r1
+old: subw $0x1230, %r1
+    and 5(%r1),%r1
+    xor pst(%r1),%r1
+    add $0x21, %r1
+    jmp helpless
+    add $34, %r1
+helpless: mov %r1, 0xff00
+    cmpw gof,gof
+    jeq gof
+    addb $34, gof
+    halt
+.section mike
+    cc: .skip 0x40
+    dd: .skip 2
+    .word 8,0xffff,pst,cc
+    .byte 14
+    .equ hal,main2+0x34
+.end

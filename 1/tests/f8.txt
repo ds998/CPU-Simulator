@@ -1,0 +1,22 @@
+.global main
+.extern gof
+.section data
+    .equ xox, main-0x560
+    .equ fef, gof+0x03
+.section text
+main:
+    mov $0, (%r1)
+    mov $0, %r1l
+    addw $0x1234, %r1
+    subw $0x1230, %r1
+    shr %r1, $2
+    movb $0x12, fef
+    call fef
+    addb $34, fef
+    mov $34, %r1
+.section bss
+    aa: .skip 0x40
+    bb: .skip 2
+    .word 8,0xffff,xox,aa
+.end
+

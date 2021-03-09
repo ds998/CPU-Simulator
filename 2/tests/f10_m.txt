@@ -1,0 +1,36 @@
+tabela simbola
+main text 0 1 0
+text text 0 1 4
+iv_table iv_table 0 1 8
+intr0 intr_text 0 0 0
+intr1 intr_text 4 0 0
+intr2 intr_text 5 0 0
+intr3 intr_text 13 0 0
+intr_text intr_text 0 1 21
+kraj tabele simbola
+equ tabela
+kraj equ tabele
+text
+kod
+2c 0 0 0 
+kraj koda
+rel.zapisi
+2 2 0 2
+kraj rel.zapisa
+iv_table
+kod
+0 0 4 0 5 0 d 0 
+kraj koda
+rel.zapisi
+0 1 7 2
+2 1 7 2
+4 1 7 2
+6 1 7 2
+kraj rel.zapisa
+intr_text
+kod
+2c 0 0 0 4 64 0 21 0 80 0 ff c 64 80 2 ff 80 0 ff c 
+kraj koda
+rel.zapisi
+2 2 0 2
+kraj rel.zapisa

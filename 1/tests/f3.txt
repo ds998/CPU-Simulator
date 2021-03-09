@@ -1,0 +1,26 @@
+.global main
+.extern gof
+.section data
+    .equ pst, main-0x560
+    .equ fef, pst+0x03
+    .global wuv
+    notb %r1, %r3
+    ret
+.section text
+main:
+    push %rf
+    jmp 0x1234
+    mov $0, (%r1)
+    mov $0, %r1l
+new: addw $0x1234, %r1
+old: subw $0x1230, %r1
+helpless: call fef
+    addb $34, fef
+    halt
+.section mike
+    aa: .skip 0x40
+    bb: .skip 2
+    .word 8,0xffff,pst,aa
+    .byte 14
+    .equ hal,main+0x34
+.end

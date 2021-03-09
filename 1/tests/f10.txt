@@ -1,0 +1,21 @@
+.global main
+.section text
+main:
+    jmp main
+.section iv_table
+.word intr0
+.word intr1
+.word intr2
+.word intr3
+.section intr_text
+intr0:
+    jmp main
+intr1:
+    halt
+intr2:
+    mov $0x21, 0xff00
+    iret
+intr3:
+    movw 0xff02, 0xff00
+    iret
+.end

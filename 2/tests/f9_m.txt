@@ -1,0 +1,44 @@
+tabela simbola
+main2 text 0 1 0
+gof data -1373 1 0
+data data 0 1 0
+text text 0 1 66
+new text 9 0 0
+old text 14 0 0
+pst data -1376 0 0
+helpless text 43 0 0
+mike mike 0 1 75
+cc mike 0 0 0
+dd mike 64 0 0
+hal mike 52 0 0
+kraj tabele simbola
+equ tabela
+pst 0
+gof 2
+hal 0
+kraj equ tabele
+data
+kod
+kraj koda
+rel.zapisi
+kraj rel.zapisa
+text
+kod
+64 0 0 0 42 60 0 0 22 6c 0 34 12 22 74 0 30 12 22 9c 62 5 0 22 ac 62 a0 fa 22 6c 0 21 0 22 2c 0 2b 0 6c 0 22 0 22 64 22 80 0 ff 8c 80 0 0 80 0 0 34 0 0 0 68 0 22 80 0 0 4 
+kraj koda
+rel.zapisi
+50 1 1 2
+53 1 1 2
+57 2 1 2
+63 1 1 2
+26 1 6 2
+36 2 3 2
+kraj rel.zapisa
+mike
+kod
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 8 0 ff ff a0 fa 0 0 e 
+kraj koda
+rel.zapisi
+70 1 6 2
+72 1 8 2
+kraj rel.zapisa
