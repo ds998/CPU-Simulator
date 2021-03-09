@@ -622,7 +622,7 @@ void CPU::ExecInstr(){
 }
 
 void CPU::HandleInter(){
-    if(psw_register.getInterrupt()) return;
+    if(psw_register.getInterrupt() && ((irq & 0x02)==0)) return;
 
     char c=0x01;
     int x=0;
@@ -654,13 +654,13 @@ void Emulator::load(Program program){
     for(int i=0;i<(int)program.end_instructions.size();i++){
         End_Instruction ei=program.end_instructions[i];
         if(ei.section!="iv_table"){
-           if(ei.address<0x0100 || ei.address>=0xdefe){
+           if(ei.address<0xf || ei.address>=0xdefe){
                cout<<"Los plasman sekcije!"<<endl;
                exit(-1);
            }
         }
         else{
-            if(ei.instructions.size()>14 || ei.instructions.size()%2!=0){
+            if(ei.instructions.size()>16 || ei.instructions.size()%2!=0){
                 cout<<"Losa iv_tabela!"<<endl;
                 exit(-1);
             }

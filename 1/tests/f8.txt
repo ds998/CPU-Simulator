@@ -3,12 +3,18 @@
 .section data
     .equ xox, main-0x560
     .equ fef, gof+0x03
+    .equ logl, 12
+    .equ motl, 25
+    .equ mofom, main+logl+motl
 .section text
 main:
     mov $0, (%r1)
     mov $0, %r1l
     addw $0x1234, %r1
     subw $0x1230, %r1
+    addw $logl, %r2
+    addw $motl, %r2
+    addw $mofom, %r2
     shr %r1, $2
     movb $0x12, fef
     call fef

@@ -961,7 +961,7 @@ Line Compiler::process_instr(vector<string> vec,int num) {
 
 
 
-		if ((type=="halt" || type=="iret"  || type=="iret" ) && vec.size() >1) {
+		if ((type=="halt" || type=="iret"  || type=="ret" ) && vec.size() >1) {
 			cout << "Greska na liniji:" << num << endl;
 			
 			exit(-1);
@@ -2323,7 +2323,6 @@ void Compiler::EquTable() {
 		while (c<s) {
 			pair<int, Line> p = equ_table[0];
 			equ_table.erase(equ_table.begin());
-			int sec_num = p.first;
 			Line l = p.second;
 			int expr = 0;
 			string sym = l.equ_symbol;
@@ -2395,100 +2394,164 @@ void Compiler::EquTable() {
 			}
 			c++;
 			if (!done) {
-				string sym = "";
-				int x = 0;
-				for (map<string, pair<string, int>>::iterator it = m.begin(); it != m.end(); ++it) {
-					pair<string, int> p = it->second;
-					if (p.second == 1) {
-						if (x > 0) {
-							cout << "Greska u equ izrazu za simbol:"<<l.equ_symbol<<endl;
+				if(m.size()==0){
+                    solved=true;
+					int idx = -1;
+					for (int j = 0; j < symbol_table.size(); j++) {
+						if (symbol_table[j].name == l.equ_symbol) {
+							idx = j;
+							break;
+						}
+					}
+					if(idx!=-1){
+						if (symbol_table[idx].section == "UNDEFINED") {
+							cout << "Pokusaj definicije .extern simbola:" << symbol_table[idx].name << endl;
 							
 							exit(-1);
 						}
+						symbol_table[idx].val = expr;
+						symbol_table[idx].section = "ABSOLUTE";
+						if (symbol_table[idx].glob_loc == -1) symbol_table[idx].glob_loc = 0;
 
-						x = 1;
-						sym = p.first;
 					}
-					else if (p.second == 0) {
-						continue;
-					}
-					else {
-						cout << "Greska u equ izrazu za simbol:" <<l.equ_symbol<< endl;
-						
-						exit(-1);
-					}
-				}
+					else{
+						Entry entry;
+						entry.name = l.equ_symbol;
+						entry.glob_loc = 0;
+						entry.val = expr;
+						entry.section = "ABSOLUTE";
+						symbol_table.push_back(entry);
 
-				int idx = -1;
-				for (int j = 0; j < symbol_table.size(); j++) {
-					if (symbol_table[j].name == l.equ_symbol) {
-						
-						idx = j;
-						break;
 					}
+
 				}
-				if (idx != -1) {
-					if (symbol_table[idx].section == "UNDEFINED") {
-						cout << "Pokusaj definicije .extern simbola:" << symbol_table[idx].name << endl;
-						
-						exit(-1);
+				else{
+					string sym = "";
+				    int x = 0;
+					bool undef=false;
+					for (map<string, pair<string, int>>::iterator it = m.begin(); it != m.end(); ++it) {
+						pair<string, int> p = it->second;
+						if (p.second == 1 && it->first!="ABSOLUTE") {
+							if (x > 0) {
+								cout << "Greska u equ izrazu za simbol:"<<l.equ_symbol<<endl;
+								
+								exit(-1);
+							}
+
+							x = 1;
+							sym = p.first;
+							if(it->first=="UNDEFINED"){
+								undef=true;
+							}
+						}
+						else if (p.second == 0) {
+							continue;
+						}
+						else {
+							if(it->first!="ABSOLUTE"){
+								cout << "Greska u equ izrazu za simbol:" <<l.equ_symbol<< endl;
+								exit(-1);
+
+							}
+							
+						}
 					}
-					symbol_table[idx].val = expr;
-					symbol_table[idx].section = symbol_table[sec_num].name;
-					if (symbol_table[idx].glob_loc == -1) symbol_table[idx].glob_loc = 0;
-					if (sym != "") {
-						pair<string, int> p;
-						p.first = l.equ_symbol;
-						for (int k = 0; k < symbol_table.size(); k++) {
-							if (symbol_table[k].name == sym) {
-								if (symbol_table[k].glob_loc == 1) {
-									p.second = k;
-								}
-								else {
-									for (int m = 0; m < symbol_table.size(); m++) {
-										if (symbol_table[m].name == symbol_table[k].section) {
-											p.second = m;
-											break;
-										}
-									}
-								}
+
+					if(sym==""){
+						int idx = -1;
+						for (int j = 0; j < symbol_table.size(); j++) {
+							if (symbol_table[j].name == l.equ_symbol) {
+								idx = j;
 								break;
 							}
 						}
-						equ_rel_table.push_back(p);
-						
+						if(idx!=-1){
+							if (symbol_table[idx].section == "UNDEFINED") {
+								cout << "Pokusaj definicije .extern simbola:" << symbol_table[idx].name << endl;
+								
+								exit(-1);
+							}
+							symbol_table[idx].val = expr;
+							symbol_table[idx].section = "ABSOLUTE";
+							if (symbol_table[idx].glob_loc == -1) symbol_table[idx].glob_loc = 0;
+
+						}
+						else{
+							Entry entry;
+							entry.name = l.equ_symbol;
+							entry.glob_loc = 0;
+							entry.val = expr;
+							entry.section = "ABSOLUTE";
+							symbol_table.push_back(entry);
+
+						}
+
+
+
 					}
-				}
-				else {
-					Entry entry;
-					entry.name = l.equ_symbol;
-					entry.glob_loc = 0;
-					entry.val = expr;
-					entry.section = symbol_table[sec_num].name;
-					symbol_table.push_back(entry);
-					if (sym != "") {
-						pair<string, int> p;
-						p.first = l.equ_symbol;
-						for (int k = 0; k < symbol_table.size(); k++) {
-							if (symbol_table[k].name == sym) {
-								if (symbol_table[k].glob_loc == 1) {
-									p.second = k;
-								}
-								else {
-									for (int m = 0; m < symbol_table.size(); m++) {
-										if (symbol_table[m].name == symbol_table[k].section) {
-											p.second = m;
-											break;
-										}
-									}
-								}
+					else{
+						int idx = -1;
+						for (int j = 0; j < symbol_table.size(); j++) {
+							if (symbol_table[j].name == l.equ_symbol) {
+								
+								idx = j;
 								break;
 							}
 						}
-						equ_rel_table.push_back(p);
+						if (idx != -1) {
+							if (symbol_table[idx].section == "UNDEFINED") {
+								cout << "Pokusaj definicije .extern simbola:" << symbol_table[idx].name << endl;
+								
+								exit(-1);
+							}
+							symbol_table[idx].val = expr;
+							for(int k=0;k<(int)symbol_table.size();k++){
+								if(symbol_table[k].name==sym){
+									symbol_table[idx].section = symbol_table[k].section;
+									break;
+								}
+							}
+							
+							if (symbol_table[idx].glob_loc == -1) symbol_table[idx].glob_loc = 0;
+						}
+						else {
+							Entry entry;
+							entry.name = l.equ_symbol;
+							entry.glob_loc = 0;
+							entry.val = expr;
+							for(int k=0;k<(int)symbol_table.size();k++){
+								if(symbol_table[k].name==sym){
+									entry.section = symbol_table[k].section;
+									break;
+								}
+							}
+							symbol_table.push_back(entry);
+						}
+
+						if(undef){
+							Equ_Member em;
+							em.symbol=l.equ_symbol;
+							em.dependent_symbol=sym;
+							for(int k=0;k<(int)l.directive_members.size();k++){
+								if(l.directive_members[k].symbol==sym){
+									if(l.directive_members[k].op=="0" || l.directive_members[k].op=="+"){
+										em.plus_minus="plus";
+
+									}
+									else{
+										em.plus_minus="minus";
+									}
+									break;
+								}
+
+							}
+							equ_rel_table.push_back(em);
+
+						}
+
 					}
+					solved = true;
 				}
-				solved = true;
 			}
 			else {
 				equ_table.push_back(p);
@@ -2582,98 +2645,164 @@ void Compiler::EquTable() {
 			}
 			c++;
 			if (!done) {
-				string sym = "";
-				int x = 0;
-				for (map<string, pair<string, int>>::iterator it = m.begin(); it != m.end(); ++it) {
-					pair<string, int> p = it->second;
-					if (p.second == 1) {
-						if (x > 0) {
-							cout << "Greska u equ izrazu za simbol:" << l.equ_symbol << endl;
+				if(m.size()==0){
+                    solved=true;
+					int idx = -1;
+					for (int j = 0; j < symbol_table.size(); j++) {
+						if (symbol_table[j].name == l.equ_symbol) {
+							idx = j;
+							break;
+						}
+					}
+					if(idx!=-1){
+						if (symbol_table[idx].section == "UNDEFINED") {
+							cout << "Pokusaj definicije .extern simbola:" << symbol_table[idx].name << endl;
 							
 							exit(-1);
 						}
+						symbol_table[idx].val = expr;
+						symbol_table[idx].section = "ABSOLUTE";
+						if (symbol_table[idx].glob_loc == -1) symbol_table[idx].glob_loc = 0;
 
-						x = 1;
-						sym = p.first;
 					}
-					else if (p.second == 0) {
-						continue;
-					}
-					else {
-						cout << "Greska u equ izrazu za simbol:" << l.equ_symbol << endl;
-						
-						exit(-1);
-					}
-				}
+					else{
+						Entry entry;
+						entry.name = l.equ_symbol;
+						entry.glob_loc = 0;
+						entry.val = expr;
+						entry.section = "ABSOLUTE";
+						symbol_table.push_back(entry);
 
-				int idx = -1;
-				for (int j = 0; j < symbol_table.size(); j++) {
-					if (symbol_table[j].name == l.equ_symbol) {
-						idx = j;
-						break;
 					}
+
 				}
-				if (idx != -1) {
-					if (symbol_table[idx].section == "UNDEFINED") {
-						cout << "Pokusaj definicije .extern simbola:" << symbol_table[idx].name << endl;
-						
-						exit(-1);
+				else{
+					string sym = "";
+				    int x = 0;
+					bool undef=false;
+					for (map<string, pair<string, int>>::iterator it = m.begin(); it != m.end(); ++it) {
+						pair<string, int> p = it->second;
+						if (p.second == 1 && it->first!="ABSOLUTE") {
+							if (x > 0) {
+								cout << "Greska u equ izrazu za simbol:"<<l.equ_symbol<<endl;
+								
+								exit(-1);
+							}
+
+							x = 1;
+							sym = p.first;
+							if(it->first=="UNDEFINED") undef=true;
+						}
+						else if (p.second == 0) {
+							continue;
+						}
+						else {
+							if(it->first!="ABSOLUTE"){
+								cout << "Greska u equ izrazu za simbol:" <<l.equ_symbol<< endl;
+								exit(-1);
+
+							}
+							
+						}
 					}
-					symbol_table[idx].val = expr;
-					symbol_table[idx].section = symbol_table[sec_num].name;
-					if (symbol_table[idx].glob_loc == -1) symbol_table[idx].glob_loc = 0;
-					if (sym != "") {
-						pair<string, int> p;
-						p.first = l.equ_symbol;
-						for (int k = 0; k < symbol_table.size(); k++) {
-							if (symbol_table[k].name == sym) {
-								if (symbol_table[k].glob_loc == 1) {
-									p.second = k;
-								}
-								else {
-									for (int m = 0; m < symbol_table.size(); m++) {
-										if (symbol_table[m].name == symbol_table[k].section) {
-											p.second = m;
-											break;
-										}
-									}
-								}
+
+					if(sym==""){
+						int idx = -1;
+						for (int j = 0; j < symbol_table.size(); j++) {
+							if (symbol_table[j].name == l.equ_symbol) {
+								idx = j;
 								break;
 							}
 						}
-						equ_rel_table.push_back(p);
+						if(idx!=-1){
+							if (symbol_table[idx].section == "UNDEFINED") {
+								cout << "Pokusaj definicije .extern simbola:" << symbol_table[idx].name << endl;
+								
+								exit(-1);
+							}
+							symbol_table[idx].val = expr;
+							symbol_table[idx].section = "ABSOLUTE";
+							if (symbol_table[idx].glob_loc == -1) symbol_table[idx].glob_loc = 0;
+
+						}
+						else{
+							Entry entry;
+							entry.name = l.equ_symbol;
+							entry.glob_loc = 0;
+							entry.val = expr;
+							entry.section = "ABSOLUTE";
+							symbol_table.push_back(entry);
+
+						}
+
+						
+
+
+
 					}
-				}
-				else {
-					Entry entry;
-					entry.name = l.equ_symbol;
-					entry.glob_loc = 0;
-					entry.val = expr;
-					entry.section = symbol_table[sec_num].name;
-					symbol_table.push_back(entry);
-					if (sym != "") {
-						pair<string, int> p;
-						p.first = l.equ_symbol;
-						for (int k = 0; k < symbol_table.size(); k++) {
-							if (symbol_table[k].name == sym) {
-								if (symbol_table[k].glob_loc == 1) {
-									p.second = k;
-								}
-								else {
-									for (int m = 0; m < symbol_table.size(); m++) {
-										if (symbol_table[m].name == symbol_table[k].section) {
-											p.second = m;
-											break;
-										}
-									}
-								}
+					else{
+						int idx = -1;
+						for (int j = 0; j < symbol_table.size(); j++) {
+							if (symbol_table[j].name == l.equ_symbol) {
+								
+								idx = j;
 								break;
 							}
 						}
-						equ_rel_table.push_back(p);
+						if (idx != -1) {
+							if (symbol_table[idx].section == "UNDEFINED") {
+								cout << "Pokusaj definicije .extern simbola:" << symbol_table[idx].name << endl;
+								
+								exit(-1);
+							}
+							symbol_table[idx].val = expr;
+							for(int k=0;k<(int)symbol_table.size();k++){
+								if(symbol_table[k].name==sym){
+									symbol_table[idx].section = symbol_table[k].section;
+									break;
+								}
+							}
+							
+							if (symbol_table[idx].glob_loc == -1) symbol_table[idx].glob_loc = 0;
+						}
+						else {
+							Entry entry;
+							entry.name = l.equ_symbol;
+							entry.glob_loc = 0;
+							entry.val = expr;
+							for(int k=0;k<(int)symbol_table.size();k++){
+								if(symbol_table[k].name==sym){
+									entry.section = symbol_table[k].section;
+									break;
+								}
+							}
+							symbol_table.push_back(entry);
+						}
+
+						if(undef){
+							Equ_Member em;
+							em.symbol=l.equ_symbol;
+							em.dependent_symbol=sym;
+							for(int k=0;k<(int)l.directive_members.size();k++){
+								if(l.directive_members[k].symbol==sym){
+									if(l.directive_members[k].op=="0" || l.directive_members[k].op=="+"){
+										em.plus_minus="plus";
+
+									}
+									else{
+										em.plus_minus="minus";
+									}
+									break;
+								}
+
+							}
+							equ_rel_table.push_back(em);
+
+						}
+
 					}
+					solved = true;
 				}
-				solved = true;
 			}
 			else {
 				equ_table.push_back(p);
@@ -2719,30 +2848,33 @@ void Compiler::SolveRelBlocks() {
 					break;
 				}
 			}
-			if (symbol_table[i].glob_loc == 0) {
+			if(symbol_table[i].section=="ABSOLUTE"){
+				short s = symbol_table[i].val;
+				for (int k = 0; k < rb.byte_size; k++) {
+					end_code[idx].code[rb.address+k] = (s & 0xFF);
+					s >>= 8;
+				}
+				continue;
+
+			}
+			else if (symbol_table[i].glob_loc == 0) {
 				short s = symbol_table[i].val;
 				for (int k = 0; k < rb.byte_size; k++) {
 					end_code[idx].code[rb.address+k] = (s & 0xFF);
 					s >>= 8;
 				}
 
-                bool equ_found=false;
-				for(int k=0;k<(int)equ_rel_table.size();k++){
-					if(equ_rel_table[k].first==symbol_table[i].name){
-						rb.table_num=i;
-						equ_found=true;
-						break;
-					}
-				}
+				bool found=false;
 
-				if(!equ_found){
-					for(int k=0;k<(int)symbol_table.size();k++){
+				for(int k=0;k<(int)symbol_table.size();k++){
 					if(symbol_table[i].section==symbol_table[k].name){
+                        found=true;
 						rb.table_num=k;
 						break;
 					}
 				}
-				}
+
+				if(!found) rb.table_num=i;
 
 				
 			}
@@ -2789,7 +2921,7 @@ void Compiler::WriteFile() {
 	f2 << "kraj tabele simbola" << endl;
 	f2 << "equ tabela" << endl;
 	for (int i = 0; i < equ_rel_table.size(); i++) {
-		f2 << equ_rel_table[i].first << " " << equ_rel_table[i].second << endl;
+		f2 << equ_rel_table[i].symbol << " " << equ_rel_table[i].dependent_symbol << " "<<equ_rel_table[i].plus_minus<< endl;
 	}
 	f2 <<"kraj equ tabele"<< endl;
 	//cout << "sekcije:" << endl;

@@ -1,0 +1,71 @@
+.global start
+.section data
+.equ out,   0xff00   
+.equ in,    out+2
+.equ delta, 65296
+.equ invalid_address, 56789
+.equ limit, 6
+cnt:        .byte     6
+msg:        .byte     101
+            .byte     114 
+            .byte     114 
+            .byte     111 
+            .byte     114 
+            .byte     10  
+            .byte     0
+            .word     0   
+            .word     0
+
+.section iv_table
+       .word     int0
+       .word     error
+       .word     tick
+       .word     tin                   
+       .word     0                     
+       .word     0
+       .word     0 
+       .word     0   
+
+
+
+
+            
+        
+.section    text
+
+start:      jmp    start
+            halt
+
+
+error:      movb    cnt,     %r1l
+            xor    %r0,      %r0
+loop1:      movb   msg(%r0), %r2l
+            mov    %r2,      out
+            add    $1,       %r0
+            cmp    %r0,      %r1
+            jne    loop1
+            halt
+
+
+tick:       mov    delta,    %r0
+            add    $1,       %r0
+            mov    %r0,      delta
+            cmp    $limit,   %r0
+            jeq    invalid_address
+            add    $96,      %r0
+            mov    %r0,      out
+            mov    $10,      %r0
+            mov    %r0,      out
+            iret
+
+
+tin:        mov    in,       %r0
+            mov    %r0,      out
+            iret
+            
+int0:       mov $200, invalid_address
+            jmp start
+
+
+.end
+

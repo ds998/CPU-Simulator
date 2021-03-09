@@ -31,6 +31,12 @@ struct SectionMaterial {
 	vector<RelBlock> rel;
 	vector<int> instructions;
 };
+
+struct Equ_Member{
+  string symbol;
+  string dependent_symbol;
+  string plus_minus;
+};
 class Compiler{
 private:
   vector<pair<int,vector<string>>> lines;
@@ -38,7 +44,7 @@ private:
   vector<Entry> symbol_table;
   vector<SectionMaterial> end_code;
   vector<pair<int,Line>> equ_table;
-  vector<pair<string, int>> equ_rel_table;
+  vector<Equ_Member> equ_rel_table;
   void AnalyseTheFile();
   void RunThroughTheFile();
   void EquTable();

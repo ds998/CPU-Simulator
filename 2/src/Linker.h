@@ -27,9 +27,14 @@ struct SectionMaterial {
 	vector<char> code;
 	vector<RelBlock> rel;
 };
+struct Equ_Member{
+	string symbol;
+	string dependent_symbol;
+	string plus_minus;
 
+};
 struct File{
-    vector<pair<string,int>> equ_table;
+    vector<Equ_Member> equ_table;
     vector<Entry> symbol_table;
     vector<SectionMaterial> sections;
 };

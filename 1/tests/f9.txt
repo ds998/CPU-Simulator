@@ -10,7 +10,7 @@ main2:
 new: addw $0x1234, %r1
 old: subw $0x1230, %r1
     and 5(%r1),%r1
-    xor pst(%r1),%r1
+    xor pst(%r7),%r1
     add $0x21, %r1
     jmp helpless
     add $34, %r1

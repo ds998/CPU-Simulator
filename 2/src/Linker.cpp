@@ -134,10 +134,11 @@ void Linker::read_files(){
                        exit(-1);
                    }
                    vector<string> ss=split(s,' ');
-                   pair<string,int> p;
-                   p.first=ss[0];
-                   p.second=stoi(ss[1]);
-                   f.equ_table.push_back(p);
+                   Equ_Member em;
+                   em.symbol=ss[0];
+                   em.dependent_symbol=ss[1];
+                   em.plus_minus=ss[2];
+                   f.equ_table.push_back(em);
 
                }
                else if(sec){
@@ -225,7 +226,7 @@ void Linker::resize_sections(){
        for(int j=0;j<(int)program.files.size();j++){
            for(int k=0;k<(int)(program.files[j].symbol_table.size());k++){
                 if(program.files[j].symbol_table[k].name==sec_name){
-                    if(counter<0x0100 && sec_name!="iv_table"){
+                    if(counter<0xf && sec_name!="iv_table"){
                         cout<<"Losa pozicija"<<endl;
                         exit(-1);
                     }
@@ -266,19 +267,18 @@ void Linker::resize_sections(){
                 int num=0;
                 counter=0;
                 if((int)passed_sections.size()>0){
-                    counter=program.exit_symbol_table[0].val;
                     for(int k=0;k<(int)program.exit_symbol_table.size();k++){
-                        counter+=program.exit_symbol_table.size();
+                        counter=program.exit_symbol_table[k].val+program.exit_symbol_table[k].size;
                     }
                 }
                 else{
-                    counter=0x0100;
+                    counter=0xf;
                 }
                 num=counter;
                 for(int k=0;k<(int)program.files.size();k++){
                     for(int l=0;l<(int)(program.files[k].symbol_table.size());l++){
                         if(program.files[k].symbol_table[l].name==sec_name){
-                            if((counter<0x0100 && sec_name!="iv_table")|| counter>=0xdefe){
+                            if((counter<0xf && sec_name!="iv_table")|| counter>=0xdefe){
                                 cout<<"Losa pozicija"<<endl;
                                 exit(-1);
                             }
@@ -338,7 +338,7 @@ void Linker::redefine_symbols(){
     for(int i=0;i<(int)program.files.size();i++){
          for(int j=0;j<(int)program.files[i].symbol_table.size();j++){
             Entry en=program.files[i].symbol_table[j];
-            if(en.name!=en.section && en.glob_loc==1 && en.section!="UNDEFINED"){
+            if(en.name!=en.section && en.glob_loc==1 && en.section!="UNDEFINED" && en.section!="ABSOLUTE"){
                 for(int k=0;k<(int)program.exit_symbol_table.size();k++){
                     if(program.exit_symbol_table[k].name==en.name){
                         cout<<"Dupla definicija simbola: "<<en.name<<endl;
@@ -359,7 +359,15 @@ void Linker::redefine_symbols(){
     for(int i=0;i<(int)program.files.size();i++){
          for(int j=0;j<(int)program.files[i].symbol_table.size();j++){
             Entry en=program.files[i].symbol_table[j];
-            if(en.section=="UNDEFINED"){
+            bool equ_found=false;
+            for(int k=0;k<(int)program.files[i].equ_table.size();k++){
+                if(en.name==program.files[i].equ_table[k].symbol){
+                    equ_found=true;
+                    break;
+                }
+
+            }
+            if(en.section=="UNDEFINED" && !equ_found){
                 bool found=false;
                 for(int k=0;k<(int)program.exit_symbol_table.size();k++){
                     if(program.exit_symbol_table[k].name==en.name){
@@ -390,132 +398,84 @@ void Linker::redefine_symbols(){
         }
         solved=0;
         for(int i=0;i<(int)program.files.size();i++){
-            vector<pair<string,int>> remaining_pairs;
+            vector<Equ_Member> remaining_pairs;
             for(int j=0;j<(int)program.files[i].equ_table.size();j++){
-                pair<string,int> p=program.files[i].equ_table[j];
-                Entry en=program.files[i].symbol_table[p.second];
-                if(en.glob_loc==0){
-                    int val=en.val;
-                    string sym_sec=en.section;
-                    int idx=-1;
-                    for(int k=0;k<(int)program.files[i].symbol_table.size();k++){
-                        if(program.files[i].symbol_table[k].name==p.first){
+                Equ_Member p=program.files[i].equ_table[j];
+                bool second_found=false;
+                int idx=-1;
+                int indicator=-1;
+                for(int k=0;k<(int)program.exit_symbol_table.size();k++){
+                    if(program.exit_symbol_table[k].name==p.dependent_symbol){
+                        second_found=true;
+                        idx=k;
+                        indicator=0;
+                        break;
+                    }
+
+                }
+         
+                if(!second_found){
+                    for(int k=0;k<(int)program.exit_symbol_table.size();k++){
+                        if(program.exit_symbol_table[k].name==p.dependent_symbol){
+                            second_found=true;
                             idx=k;
+                            indicator=1;
                             break;
                         }
+
                     }
-                    int x=-1;
-                    for(int k=0;k<(int)program.files[i].symbol_table.size();k++){
-                        if(program.files[i].symbol_table[k].name==sym_sec){
-                            val+=program.files[i].symbol_table[k].val;
-                            x=1;
-                            break;
-                        }
-                    }
-                    if(x==-1){
-                        remaining_pairs.push_back(p);
-                        continue;
-                    }
-                    string sec=program.files[i].symbol_table[idx].section;
-                    if(program.files[i].symbol_table[idx].glob_loc==0){
-                        for(int k=0;k<(int)program.files[i].sections.size();k++){
-                            
-                                for(int l=0;l<(int)program.files[i].sections[k].rel.size();l++){
-                                    if(program.files[i].sections[k].rel[l].table_num==idx){
-                                        int addr=program.files[i].sections[k].rel[l].address;
-                                        int v=val;
-                                        for(int m=0;m<(int)program.files[i].sections[k].rel[l].byte_size;m++){
-                                            program.files[i].sections[k].code[addr]=(v & 0xff);
-                                            v>>=8;
-                                            addr++;
-                                        }
-                                        for(int m=0;m<(int)program.files[i].symbol_table.size();m++){
-                                            if(program.files[i].symbol_table[m].name==sec){
-                                                program.files[i].sections[k].rel[l].table_num=m;
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
-                            
-                        }
-                    }
-                    else{
-                        for(int k=0;k<(int)program.exit_symbol_table.size();k++){
-                            if(program.exit_symbol_table[k].name==p.first){
-                                program.exit_symbol_table[k].val=val;
-                                break;
-                            }
-                        }
-                    }
-                    solved=1;
-                    equ_counter--;
+
+                }
+
+                if(!second_found){
+                    remaining_pairs.push_back(p);
+                    continue;
+                }
+
+                int val=-1;
+
+
+                if(indicator==0){
+                    val=program.exit_symbol_table[idx].val;
+
                 }
                 else{
-                    int x=-1;
-                    int val=0;
-                    int idx=-1;
-                    for(int k=0;k<(int)program.files[i].symbol_table.size();k++){
-                        if(program.files[i].symbol_table[k].name==p.first){
-                            idx=k;
-                            val=program.files[i].symbol_table[k].val;
-                            break;
-                        }
-                    }
-                    for(int k=0;k<(int)program.exit_symbol_table.size();k++){
-                        if(program.exit_symbol_table[k].name==en.name){
-                            val+=program.exit_symbol_table[k].val;
-                            x=1;
-                            break;
-                        }
-                    }
-                    if(x==-1){
-                        remaining_pairs.push_back(p);
-                        continue;
-                    }
-                    string sec=program.files[i].symbol_table[idx].section;
-                    if(program.files[i].symbol_table[idx].glob_loc==0){
-                        for(int k=0;k<(int)program.files[i].sections.size();k++){
-                            
-                                for(int l=0;l<(int)program.files[i].sections[k].rel.size();l++){
-                                    if(program.files[i].sections[k].rel[l].table_num==idx){
-                                        int addr=program.files[i].sections[k].rel[l].address;
-                                        int v=val;
-                                        for(int m=0;m<(int)program.files[i].sections[k].rel[l].byte_size;m++){
-                                            program.files[i].sections[k].code[addr]=(v & 0xff);
-                                            v>>=8;
-                                            addr++;
-                                        }
-                                        for(int m=0;m<(int)program.files[i].symbol_table.size();m++){
-                                            if(program.files[i].symbol_table[m].name==sec){
-                                                program.files[i].sections[k].rel[l].table_num=m;
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
-                            
-                        }
-                    }
-                    else{
-                        for(int k=0;k<(int)program.exit_symbol_table.size();k++){
-                            if(program.exit_symbol_table[k].name==p.first){
-                                program.exit_symbol_table[k].val=val;
-                                break;
-                            }
-                        }
-                    }
-                    solved=1;
-                    equ_counter--;
+                    val=program.files[i].symbol_table[idx].val;
+
                 }
+
+                for(int k=0;k<(int)program.files[i].symbol_table.size();k++){
+                    if(p.symbol==program.files[i].symbol_table[k].name){
+                        program.files[i].symbol_table[k].section="ABSOLUTE";
+                        if(p.plus_minus=="plus"){
+                            program.files[i].symbol_table[k].val+=val;
+                        }
+                        else{
+                            program.files[i].symbol_table[k].val-=val;
+
+                        }
+                        if(program.files[i].symbol_table[k].glob_loc==1){
+                            program.exit_symbol_table.push_back(program.files[i].symbol_table[k]);
+
+                        }
+
+                        break;
+
+
+
+
+                    }
+                }
+
+
+                solved=1;
+                equ_counter--;
             }
             program.files[i].equ_table=remaining_pairs;
         }
 
     }
-
-
-   /*
+    /*
    for(int i=0;i<(int)program.exit_symbol_table.size();i++){
        cout << dec << program.exit_symbol_table[i].name << " " << program.exit_symbol_table[i].section << " " << program.exit_symbol_table[i].val << " " << program.exit_symbol_table[i].glob_loc << " " << program.exit_symbol_table[i].size << endl;
    }
@@ -582,6 +542,24 @@ void Linker::do_rel_blocks(){
                         break;
                     }
                 }
+
+                for(int m=0;m<(int)program.files[i].symbol_table.size();m++){
+                    if(program.files[i].symbol_table[m].name==program.files[i].symbol_table[program.files[i].sections[j].rel[k].table_num].name && program.files[i].symbol_table[m].section=="ABSOLUTE"){
+                        val+=program.files[i].symbol_table[m].val-val;
+                        int addr=program.files[i].sections[j].rel[k].address;
+                        for(int n=0;n<program.files[i].sections[j].rel[k].byte_size;n++){
+                            program.files[i].sections[j].code[addr]=(val & 0xff);
+                            val>>=8;
+                            addr++;
+                        }
+                        break;
+
+
+                    }
+
+
+
+                }
             }
         }
     }
@@ -610,7 +588,8 @@ void Linker::do_rel_blocks(){
             }
         }
         cout<<"xxxxxx"<<endl;
-   }*/
+   }
+   */
 
 }
 

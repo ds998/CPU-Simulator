@@ -540,7 +540,7 @@ struct Terminal{
             int s=memory.getVal(data_out,2);
             char c=(char)s;
             if(c!=0){
-                cout<<c<<" ";
+                cout<<c<<" "<<flush;
             }
             memory.setVal(0,data_out,2);
             char buf[1];

@@ -1,0 +1,47 @@
+tabela simbola
+start text 0 1 0
+data data 0 1 12
+cnt data 0 0 0
+msg data 1 0 0
+iv_table iv_table 0 1 16
+int0 text 92 0 0
+error text 5 0 0
+tick text 36 0 0
+tin text 81 0 0
+text text 0 1 103
+loop1 text 13 0 0
+out ABSOLUTE -256 0 0
+delta ABSOLUTE -240 0 0
+limit ABSOLUTE 6 0 0
+invalid_address ABSOLUTE -8747 0 0
+in ABSOLUTE -254 0 0
+kraj tabele simbola
+equ tabela
+kraj equ tabele
+data
+kod
+6 65 72 72 6f 72 a 0 0 0 0 0 
+kraj koda
+rel.zapisi
+kraj rel.zapisa
+iv_table
+kod
+5c 0 5 0 24 0 51 0 0 0 0 0 0 0 0 0 
+kraj koda
+rel.zapisi
+0 1 9 2
+2 1 9 2
+4 1 9 2
+6 1 9 2
+kraj rel.zapisa
+text
+kod
+2c 0 0 0 4 60 80 0 0 22 ac 20 20 60 60 1 0 24 64 24 80 0 ff 6c 0 1 0 20 8c 20 22 3c 0 d 0 4 64 80 10 ff 20 6c 0 1 0 20 64 20 80 10 ff 8c 0 6 0 20 34 0 d5 dd 6c 0 60 0 20 64 20 80 0 ff 64 0 a 0 20 64 20 80 0 ff c 64 80 2 ff 20 64 20 80 0 ff c 64 0 c8 0 80 d5 dd 2c 0 0 0 
+kraj koda
+rel.zapisi
+2 2 0 2
+101 2 0 2
+7 1 1 2
+15 1 1 2
+33 2 9 2
+kraj rel.zapisa

@@ -2,16 +2,18 @@ tabela simbola
 main text 0 1 0
 gof UNDEFINED 0 1 0
 data data 0 1 0
-text text 0 1 45
-fef data 3 0 0
+text text 0 1 60
+logl ABSOLUTE 12 0 0
+motl ABSOLUTE 25 0 0
+mofom text 37 0 0
+fef UNDEFINED 3 0 0
 bss bss 0 1 74
 aa bss 0 0 0
 bb bss 64 0 0
-xox data -1376 0 0
+xox text -1376 0 0
 kraj tabele simbola
 equ tabela
-xox 0
-fef 1
+fef gof plus
 kraj equ tabele
 data
 kod
@@ -20,18 +22,19 @@ rel.zapisi
 kraj rel.zapisa
 text
 kod
-64 0 0 0 42 60 0 0 22 6c 0 34 12 22 74 0 30 12 22 c4 22 0 2 0 60 0 12 80 3 0 24 0 3 0 68 0 22 80 3 0 64 0 22 0 22 
+64 0 0 0 42 60 0 0 22 6c 0 34 12 22 74 0 30 12 22 6c 0 c 0 24 6c 0 19 0 24 6c 0 25 0 24 c4 22 0 2 0 60 0 12 80 3 0 24 0 3 0 68 0 22 80 3 0 64 0 22 0 22 
 kraj koda
 rel.zapisi
-28 1 4 2
-32 2 4 2
-38 1 4 2
+31 1 3 2
+43 1 7 2
+47 2 7 2
+53 1 7 2
 kraj rel.zapisa
 bss
 kod
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 8 0 ff ff a0 fa 0 0 
 kraj koda
 rel.zapisi
-72 1 5 2
-70 1 8 2
+72 1 8 2
+70 1 3 2
 kraj rel.zapisa
